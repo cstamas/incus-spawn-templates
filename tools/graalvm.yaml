@@ -1,5 +1,5 @@
 name: graalvm
-description: Oracle GraalVM 25.2 for JDK 25
+description: Oracle GraalVM 25.3 for JDK 25
 
 packages:
   - gcc
@@ -7,20 +7,20 @@ packages:
   - zlib-devel
 
 downloads:
-  - url: https://gds.oracle.com/download/graal/25i2/latest/graalvm-jdk-25i2-25_linux-x64_bin.tar.gz
-    sha256: 7100d99cbfec68b03b669cc60c7e8592bbcda1732e8eaebc460fe0b75849a894
+  - url: https://gds.oracle.com/download/graal/25i3/latest/graalvm-jdk-25i3-25_linux-x64_bin.tar.gz
+    sha256: 814deac144a912035c4e824e05fa06a2e0c83821f0fb9d1084bc916e5eeef247
     extract: /opt
     arch: x86_64
     links:
-      /opt/graalvm-25.2.4+7.1/bin/native-image: /usr/local/bin/native-image
-  - url: https://gds.oracle.com/download/graal/25i2/latest/graalvm-jdk-25i2-25_linux-aarch64_bin.tar.gz
-    sha256: 0bc65f9c36ae77bd83aad46a2b4de4b0ec97da1b4ac83fedb59e19f868873dee
+      /opt/graalvm-25.3.4.1+1.1/bin/native-image: /usr/local/bin/native-image
+  - url: https://gds.oracle.com/download/graal/25i3/latest/graalvm-jdk-25i3-25_linux-aarch64_bin.tar.gz
+    sha256: aa80a8aa63b0e2ca50946c7fddb77a7d1bf8488a8a3f0175275a3c0e8face20b
     extract: /opt
     arch: aarch64
     links:
-      /opt/graalvm-25.2.4+7.1/bin/native-image: /usr/local/bin/native-image
+      /opt/graalvm-25.3.4.1+1.1/bin/native-image: /usr/local/bin/native-image
 
 env:
-  - export GRAALVM_HOME=/opt/graalvm-25.2.4+7.1
+  - export GRAALVM_HOME=/opt/graalvm-25.3.4.1+1.1
 
 verify: native-image --version
