@@ -30,12 +30,14 @@ files:
       One-time, from `~/jdk`. This line wires in every tool this box provides:
 
           cd ~/jdk
-          bash configure \
+          CC=/usr/bin/gcc CXX=/usr/bin/g++ bash configure \
             --with-boot-jdk=/usr/lib/jvm/java-latest-openjdk \
             --with-jtreg=/opt/jtreg \
             --with-gtest=/opt/gtest \
             --with-hsdis=capstone --enable-hsdis-bundling \
             --enable-ccache
+
+      The `CC=`/`CXX=` prefix is **required** — see the ccache note below.
 
       - `--with-jtreg=/opt/jtreg` — the jtreg harness (regression/`test/**`).
         There is **no** env auto-detect; this flag is the only way in.
@@ -46,12 +48,28 @@ files:
         `-XX:+PrintAssembly` just works after a plain `make` (no separate hsdis
         build step needed). `binutils-devel` is also installed if you prefer
         `--with-hsdis=binutils`.
-      - `--enable-ccache` — reuse the ccache install for fast incremental rebuilds.
+      - `--enable-ccache` — let OpenJDK's build wrap the compiler with ccache
+        for fast incremental rebuilds. **Important:** the Fedora `ccache`
+        package ships `/etc/profile.d/ccache.sh`, which prepends
+        `/usr/lib64/ccache` to `PATH` in every login shell. The entries there
+        (`gcc`, `g++`, …) are symlinks to `ccache`, so a bare `configure` picks
+        one up and aborts with:
+
+            configure: error: /usr/lib64/ccache/gcc is a symbolic link to
+            ccache. This is not supported.
+
+        OpenJDK does its own ccache wrapping and wants the *real* compiler.
+        Passing `CC=/usr/bin/gcc CXX=/usr/bin/g++` (as above) points it at the
+        unwrapped binaries; `--enable-ccache` then wraps them itself, and
+        `configure` reports `ccache status: Active`. (Alternatively, drop
+        `/usr/lib64/ccache` from `PATH` for the `configure`/`make` calls — but
+        the `CC=`/`CXX=` prefix is the least surprising.)
 
       HotSpot work usually wants a debug build. Use a **separate** configuration
-      so you can keep both:
+      so you can keep both (same `CC=`/`CXX=` prefix applies):
 
-          bash configure --with-debug-level=fastdebug --with-conf-name=fastdebug \
+          CC=/usr/bin/gcc CXX=/usr/bin/g++ bash configure \
+            --with-debug-level=fastdebug --with-conf-name=fastdebug \
             --with-boot-jdk=/usr/lib/jvm/java-latest-openjdk \
             --with-jtreg=/opt/jtreg --with-gtest=/opt/gtest \
             --with-hsdis=capstone --enable-hsdis-bundling --enable-ccache
