@@ -1,0 +1,39 @@
+name: skara
+description: Skara CLI (git jcheck / webrev / pr / info / defpath) — OpenJDK contribution workflow
+
+# Skara publishes no prebuilt binaries, so we build from source. The gradle
+# `local` task jlinks a self-contained image (it bundles its own pinned JDK 21,
+# so the result does not depend on the host JAVA_HOME at runtime) into
+# build/cli — build/cli/bin/git-* launchers next to build/cli/image/bin/java.
+# On non-x64 hosts `local` maps to :cli:imageLocal, which is why we use it
+# instead of the x64-only `images` task (that one cross-downloads a linux-x64
+# JDK and fails on aarch64).
+#
+# gradlew needs a JDK 21+ to *run* the build; java-latest-openjdk-devel (JDK 26
+# on Fedora 44) is fine. git is needed for the clone and by the CLI itself.
+packages:
+  - git
+  - java-latest-openjdk-devel
+
+run:
+  # Shallow clone of master — Skara is a fast-moving tool and latest is the
+  # recommended CLI; nothing here inspects deep history.
+  - git clone --depth 1 https://github.com/openjdk/skara.git /opt/skara-src
+  # gradlew downloads its own Gradle distribution and the pinned JDK 21 it
+  # jlinks the image from; --no-daemon so no gradle daemon lingers in the image.
+  - cd /opt/skara-src && JAVA_HOME=/usr/lib/jvm/java-latest-openjdk sh gradlew --no-daemon --console=plain local
+  # Keep bin/ and image/ siblings together: the launchers resolve java via
+  # ${DIR}/../image/bin/java, so the whole tree must move as one.
+  - cp -a /opt/skara-src/build/cli /opt/skara
+  - chmod -R a+rX /opt/skara
+  # Drop the source tree and build/gradle caches — only /opt/skara is needed.
+  - rm -rf /opt/skara-src /root/.gradle
+
+env:
+  # The launchers are named git-jcheck, git-webrev, git-pr, ... so putting the
+  # dir on PATH is what makes `git jcheck` etc. resolve as git subcommands.
+  # Not symlinked into /usr/local/bin because each launcher does
+  # DIR=$(dirname "$0") and expects ../image alongside it.
+  - export PATH=/opt/skara/bin:$PATH
+
+verify: /opt/skara/bin/git-jcheck --version

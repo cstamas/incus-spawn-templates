@@ -1,0 +1,27 @@
+name: gtest
+description: GoogleTest 1.14.0 source (HotSpot C++ unit tests)
+
+# GoogleTest source tree, consumed by the JDK build via
+#   bash configure --with-gtest=$GTEST_HOME
+# which enables the HotSpot unit tests: `make test TEST=gtest:all`.
+#
+# Version 1.14.0 matches GTEST_VERSION in the openjdk/jdk repo
+# (make/conf/github-actions.conf); configure verifies the version in
+# CMakeLists.txt, so it must match exactly.
+#
+# Unlike jtreg, this IS pinned: GitHub's tagged source tarball is immutable,
+# so the sha256 is stable.
+downloads:
+  - url: https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
+    sha256: 8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7
+    extract: /opt
+
+run:
+  # Version-independent path for GTEST_HOME below.
+  - ln -sfn /opt/googletest-1.14.0 /opt/gtest
+  - chmod -R a+rX /opt/googletest-1.14.0
+
+env:
+  - export GTEST_HOME=/opt/gtest
+
+verify: test -f /opt/gtest/googletest/include/gtest/gtest.h

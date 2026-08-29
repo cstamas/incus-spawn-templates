@@ -1,15 +1,46 @@
 name: tpl-openjdk
-description: OpenJDK development (JDK + build deps + source)
-parent: tpl-mydev
+description: OpenJDK development (JDK 26 boot JDK + build deps + source)
+# Hangs directly off tpl-minimal (not the tpl-java chain) so the older JDK 25
+# from tpl-java is never installed: JDK mainline (28) requires a boot JDK of
+# 26/27/28, and a stray JDK 25 on JAVA_HOME/PATH only makes `configure` emit
+# confusing "incorrect JDK version" warnings. Everything the chain used to
+# provide that we still want is re-declared explicitly below.
+parent: tpl-minimal
+tools:
+  - claude
+  - gh
+  - tmux
+  - starship
+  - podman
+  - jtreg
+  - gtest
+  - skara
+  - openjdk-primer
 packages:
-  - java-26-openjdk-devel
+  # Boot JDK: java-latest-openjdk == JDK 26 on Fedora 44; its install path
+  # (/usr/lib/jvm/java-latest-openjdk) is what JAVA_HOME points at below.
+  - java-latest-openjdk-devel
+  # Core build toolchain
+  - gcc
+  - gcc-c++
+  - make
   - autoconf
-  - alsa-lib-devel
-  - capstone-devel
-  - cups-devel
+  - gdb
+  - git
+  - zip
+  - unzip
   - file
-  - gawk
   - cpio
+  - gawk
+  - which
+  - diffutils
+  - findutils
+  - tar
+  - patch
+  - pkgconf-pkg-config
+  # Client libraries: AWT/Swing, sound, printing, image codecs, color mgmt
+  - alsa-lib-devel
+  - cups-devel
   - fontconfig-devel
   - freetype-devel
   - libXtst-devel
@@ -22,14 +53,20 @@ packages:
   - giflib-devel
   - lcms2-devel
   - libffi-devel
-  - gcc
-  - gcc-c++
-  - make
-  - gdb
-  - zip
-  - unzip
-tools:
-  - jtreg
+  # hsdis (JIT disassembly) backends: capstone and binutils
+  - capstone-devel
+  - binutils-devel
+  # Faster incremental rebuilds
+  - ccache
+  # `make docs`: pandoc renders the docs, graphviz (dot) the diagrams
+  - graphviz
+  - pandoc
+  # Debugging / profiling
+  - perf
+  - strace
+env:
+  - name: JAVA_HOME
+    value: /usr/lib/jvm/java-latest-openjdk
 repos:
   - url: https://github.com/openjdk/jdk.git
     path: ~/jdk

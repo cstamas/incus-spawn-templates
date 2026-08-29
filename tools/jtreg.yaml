@@ -1,9 +1,19 @@
 name: jtreg
-description: JTReg 8.3
+description: JTReg 8.3+1 test harness
 
+# NOTE: no sha256 is pinned on purpose. Shipilev rebuilds jtreg-8.3+1.zip in
+# place (the zip bakes in a build date), so a pinned hash drifts and breaks the
+# build on every rebuild. Omitting sha256 makes incus-spawn fetch the artifact
+# fresh every time without verification (unsigned). This is a deliberate
+# trade-off: no integrity/reproducibility check, and TLS trust terminates at the
+# isx MITM proxy rather than at Shipilev. Revisit if Shipilev starts publishing
+# immutable per-build URLs (then pin url + sha256) — see also the build-from-
+# source alternative (immutable git tag + jtreg's own checksummed deps).
+#
+# The version stays pinned to 8.3+1 to match JTREG_VERSION in the openjdk/jdk
+# repo (make/conf/github-actions.conf); a mismatched harness can break tests.
 downloads:
   - url: https://builds.shipilev.net/jtreg/jtreg-8.3%2B1.zip
-    sha256: 7ef9ccb6e9d4adc991e909922a302698295fdb8e249df72f16a5d35cf2852fc4
     extract: /opt
     links:
       /opt/jtreg/bin/jtreg: /usr/local/bin/jtreg

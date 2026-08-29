@@ -1,0 +1,99 @@
+name: openjdk-primer
+description: Drop a CLAUDE.md primer in the home dir so Claude Code knows how this OpenJDK box is wired
+
+# Images have no `files:` field, so the primer ships as a tool. It lands at
+# ~/CLAUDE.md (parent of ~/jdk): Claude Code loads it for any work under the
+# home dir, and keeping it out of the repo leaves `git status` on ~/jdk clean.
+files:
+  - path: /home/agentuser/CLAUDE.md
+    owner: agentuser
+    content: |
+      # OpenJDK development box
+
+      This is a disposable OpenJDK dev environment (incus-spawn `tpl-openjdk`,
+      Fedora 44). The JDK **mainline** source is checked out at `~/jdk`
+      (currently JDK 28). Everything below is already installed and verified.
+
+      ## Boot JDK — important
+
+      The build needs a boot JDK of 26/27/28. This box ships **JDK 26** as
+      `java-latest-openjdk` and points `JAVA_HOME` at it:
+
+          JAVA_HOME=/usr/lib/jvm/java-latest-openjdk   # JDK 26
+
+      Do **not** boot-build with an older JDK. (There is no JDK 25 here — this
+      template deliberately skips it so `configure` doesn't warn about the wrong
+      boot JDK version.)
+
+      ## Configure
+
+      One-time, from `~/jdk`. This line wires in every tool this box provides:
+
+          cd ~/jdk
+          bash configure \
+            --with-boot-jdk=/usr/lib/jvm/java-latest-openjdk \
+            --with-jtreg=/opt/jtreg \
+            --with-gtest=/opt/gtest \
+            --with-hsdis=capstone --enable-hsdis-bundling \
+            --enable-ccache
+
+      - `--with-jtreg=/opt/jtreg` — the jtreg harness (regression/`test/**`).
+        There is **no** env auto-detect; this flag is the only way in.
+      - `--with-gtest=/opt/gtest` — GoogleTest 1.14.0 for the HotSpot C++ unit
+        tests. Version must match `GTEST_VERSION`; configure checks it.
+      - `--with-hsdis=capstone --enable-hsdis-bundling` — builds hsdis with the
+        capstone backend and bundles `hsdis-<arch>.so` into the JDK image, so
+        `-XX:+PrintAssembly` just works after a plain `make` (no separate hsdis
+        build step needed). `binutils-devel` is also installed if you prefer
+        `--with-hsdis=binutils`.
+      - `--enable-ccache` — reuse the ccache install for fast incremental rebuilds.
+
+      HotSpot work usually wants a debug build. Use a **separate** configuration
+      so you can keep both:
+
+          bash configure --with-debug-level=fastdebug --with-conf-name=fastdebug \
+            --with-boot-jdk=/usr/lib/jvm/java-latest-openjdk \
+            --with-jtreg=/opt/jtreg --with-gtest=/opt/gtest \
+            --with-hsdis=capstone --enable-hsdis-bundling --enable-ccache
+          make CONF=fastdebug images
+
+      ## Build
+
+          make images            # full product build → build/*/images/jdk
+          make hotspot           # just the JVM (faster iteration)
+          make docs              # API docs (pandoc + graphviz are installed)
+          make clean / dist-clean
+
+      Run the freshly built JDK:
+
+          build/*/images/jdk/bin/java --version
+
+      ## Test
+
+          make test TEST=tier1                       # standard first tier
+          make test TEST="gtest:all"                 # all HotSpot C++ unit tests
+          make test TEST="gtest:os"                  # one gtest suite
+          make test TEST="jtreg:test/hotspot/jtreg/compiler/c2"   # a jtreg dir
+          make test TEST="jtreg:test/jdk/java/lang"
+
+      ## Disassembly (hsdis)
+
+      Because hsdis is bundled at build time, PrintAssembly works out of the box:
+
+          build/*/images/jdk/bin/java -XX:+UnlockDiagnosticVMOptions \
+            -XX:+PrintAssembly -XX:CompileCommand=print,*::yourMethod ...
+
+      ## Contribution workflow (Skara)
+
+      The Skara CLI is on PATH as git subcommands:
+
+          git jcheck          # pre-flight the commit against OpenJDK rules
+          git webrev          # generate a webrev
+          git pr              # create/manage a pull request
+          git info / git defpath / git sync
+
+      ## Notes
+
+      - Do not push branches or open PRs/public comments unless explicitly asked.
+      - jtreg here is Shipilev's build fetched unsigned (no integrity pin); it is
+        pinned to the version the repo expects.
