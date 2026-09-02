@@ -5,6 +5,7 @@ packages:
   - gcc
   - glibc-devel
   - zlib-devel
+  - libstdc++-static
 
 downloads:
   - url: https://gds.oracle.com/download/graal/25i3/latest/graalvm-jdk-25i3-25_linux-x64_bin.tar.gz
