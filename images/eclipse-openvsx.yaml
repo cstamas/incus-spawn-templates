@@ -1,0 +1,12 @@
+name: tpl-eclipse-openvsx
+description: Eclipse OpenVSX
+parent: tpl-java
+tools:
+  - podman
+  - claude
+  - eclipse-openvsx-tools
+repos:
+  - url: https://github.com/eclipse-openvsx/openvsx.git
+    path: ~/openvsx
+workdir: ~/openvsx
+
