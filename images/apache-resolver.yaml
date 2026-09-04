@@ -1,0 +1,8 @@
+name: tpl-apache-resolver
+description: Apache Resolver
+parent: tpl-java
+tools:
+  - podman
+repos:
+  - url: https://github.com/apache/maven-resolver.git
+    path: ~/maven-resolver
