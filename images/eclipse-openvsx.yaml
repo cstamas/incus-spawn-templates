@@ -4,6 +4,7 @@ parent: tpl-java
 tools:
   - podman
   - claude
+  - eclipse-openvsx-tools
 repos:
   - url: https://github.com/cstamas/openvsx.git
     path: ~/openvsx

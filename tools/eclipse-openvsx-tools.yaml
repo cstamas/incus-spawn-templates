@@ -1,0 +1,23 @@
+name: eclipse-openvsx-tools
+description: EclipseVSX Extra Tools
+
+packages:
+  - gawk
+  - jq
+  - ripgrep
+  - mc
+  - nano
+  - nodejs
+
+run_as_user:
+  - ~/.local/bin/claude plugins marketplace add humanlayer/skills
+  - ~/.local/bin/claude plugins marketplace add obra/superpowers-marketplace
+  - ~/.local/bin/claude plugins marketplace add DietrichGebert/ponytail
+  - ~/.local/bin/claude plugins marketplace add anthropics/claude-plugins-official
+  - ~/.local/bin/claude plugins install code-review@claude-plugins-official
+  - ~/.local/bin/claude plugins install code-simplifier@claude-plugins-official
+  - ~/.local/bin/claude plugins install context7@claude-plugins-official
+  - ~/.local/bin/claude plugins install github@claude-plugins-official
+  - ~/.local/bin/claude plugins install ponytail@ponytail
+  - ~/.local/bin/claude plugins install show-me@skills
+  - ~/.local/bin/claude plugins install superpowers@superpowers-marketplace
