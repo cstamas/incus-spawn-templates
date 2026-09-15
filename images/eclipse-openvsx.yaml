@@ -8,3 +8,5 @@ tools:
 repos:
   - url: https://github.com/cstamas/openvsx.git
     path: ~/openvsx
+default-action: claude
+workdir: ~/openvsx

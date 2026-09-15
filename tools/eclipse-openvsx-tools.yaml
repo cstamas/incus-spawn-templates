@@ -1,6 +1,9 @@
 name: eclipse-openvsx-tools
 description: EclipseVSX Extra Tools
 
+requires:
+  - sshd
+
 packages:
   - gawk
   - jq
