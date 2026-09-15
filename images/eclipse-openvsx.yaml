@@ -3,7 +3,6 @@ description: Eclipse OpenVSX
 parent: tpl-java
 tools:
   - podman
-  - gradle
   - claude
 repos:
   - url: https://github.com/cstamas/openvsx.git
