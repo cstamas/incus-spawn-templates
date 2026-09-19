@@ -4,6 +4,7 @@ parent: tpl-mydev
 tools:
   - podman
   - graalvm
+  - mvnd
   - claude: {model: claude-sonnet-5}
 default-action: claude
 packages:
@@ -11,5 +12,6 @@ packages:
 repos:
   - url: https://github.com/quarkusio/quarkus.git
     path: ~/quarkus
+    prime: mvnd -b singlethreaded -Dquickly
   - url: https://github.com/quarkusio/quarkus-quickstarts.git
     path: ~/quarkus-quickstarts

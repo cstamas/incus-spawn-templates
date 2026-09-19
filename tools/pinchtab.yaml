@@ -1,0 +1,109 @@
+name: pinchtab
+description: PinchTab 0.15.2 — browser control for AI agents (headless Chromium + agent skill)
+
+# PinchTab ships one static Go binary per platform, so the npm package the
+# upstream installer uses is skipped entirely: it only downloads this same
+# binary and copies the bundled skill, both of which are done directly below —
+# and skipping it keeps Node.js out of the image.
+#
+# Chromium comes from Fedora rather than a Chrome-for-Testing download so the
+# browser is patched by the distro along with everything else in the template.
+# It is by far the biggest thing this tool adds (~540 MB installed, most of it
+# chromium-common and the Mesa drivers it recommends).
+packages:
+  - chromium
+  - git   # the skill below is checked out from the release tag
+  - jq    # the skill's profile examples pipe instance JSON through it
+
+parameters:
+  allowed_domains:
+    type: string
+    default: "*"
+    description: "Comma-separated domains the browser may navigate to ('*' for any)"
+  mcp:
+    type: boolean
+    default: "false"
+    description: "Also register PinchTab's MCP server with Claude Code and install the pinchtab-mcp skill"
+
+downloads:
+  - url: https://github.com/pinchtab/pinchtab/releases/download/v0.15.2/pinchtab-linux-amd64
+    sha256: 0bb4f97a1c92f94bcdbadffc39dc6985a4757c88a77876bbcb42142191e8202d
+    destination_file: /usr/local/bin/pinchtab
+    arch: x86_64
+  - url: https://github.com/pinchtab/pinchtab/releases/download/v0.15.2/pinchtab-linux-arm64
+    sha256: e3343f84d1fffd430821eaa5d509ad454418a09b516b07eff81f6bb5266052ff
+    destination_file: /usr/local/bin/pinchtab
+    arch: aarch64
+
+run:
+  # destination_file only guarantees a+r, and this one is an executable.
+  - chmod 0755 /usr/local/bin/pinchtab
+  # isx keeps agent skills in one shared directory and lets Claude Code reach
+  # them through a ~/.claude/skills symlink. ClaudeSetup creates that link, but
+  # this tool must not depend on running after it — or on claude being in the
+  # template at all. Note the asymmetry: only Claude Code auto-discovers what
+  # lands here (CodexSetup and PiSetup link no skills directory), so under
+  # another agent the CLI still works but the skill is a file it must be
+  # pointed at.
+  - |
+    mkdir -p /home/agentuser/.agents/skills
+    if [ -d /home/agentuser/.claude ] && [ ! -L /home/agentuser/.claude/skills ]; then
+      rm -rf /home/agentuser/.claude/skills
+      ln -sfn /home/agentuser/.agents/skills /home/agentuser/.claude/skills
+    fi
+    chown -R agentuser:agentuser /home/agentuser/.agents
+
+run_as_user:
+  # The skills are versioned with the binary, so take them from the same tag.
+  # A blobless sparse clone fetches ~900 KB instead of the 29 MB working tree.
+  - |
+    set -eu
+    rm -rf /tmp/pinchtab-skills
+    git -c advice.detachedHead=false clone --quiet --depth 1 --branch v0.15.2 \
+      --filter=blob:none --sparse \
+      https://github.com/pinchtab/pinchtab.git /tmp/pinchtab-skills
+    git -C /tmp/pinchtab-skills sparse-checkout set skills
+    mkdir -p ~/.agents/skills
+    for skill in pinchtab $([ "${param_mcp}" = "true" ] && echo pinchtab-mcp); do
+      rm -rf ~/.agents/skills/"$skill"
+      cp -a /tmp/pinchtab-skills/skills/"$skill" ~/.agents/skills/"$skill"
+    done
+    rm -rf /tmp/pinchtab-skills
+  # PinchTab's out-of-the-box allowlist is local-only, so without this an agent
+  # cannot reach a single real site. Opening it up is the isx trade: the
+  # container is the blast radius. Know what that trade includes here — the
+  # host proxy injects real credentials for intercepted domains, and a loaded
+  # page's own JavaScript reaches them: a cross-origin fetch to
+  # api.github.com comes back authenticated, because GitHub's API allows every
+  # origin. allowedDomains gates *navigation* only, so narrowing it decides
+  # which pages get to run JavaScript at all — it does not contain one that
+  # already did (measured: a page served from localhost still read the
+  # GitHub API with the allowlist set to localhost alone).
+  #
+  # Write the config through PinchTab itself rather than by hand: a config file
+  # that omits a section is not defaulted, it is read as "off", so a hand-rolled
+  # two-line file quietly disables IDPI — the content guard that wraps untrusted
+  # page text is exactly what an agent wants left on. `config set` splits the
+  # comma-separated list and trims it on its own.
+  - |
+    set -eu
+    [ -f ~/.pinchtab/config.json ] || pinchtab config init >/dev/null
+    pinchtab config set security.allowedDomains "${param_allowed_domains}" >/dev/null
+    # `config init` stamps configVersion and generates server.token. Drop both
+    # so every container branched from this template generates its own on first
+    # use instead of sharing the one minted at build time.
+    tmp=$(mktemp)
+    jq 'del(.configVersion) | del(.server.token)' ~/.pinchtab/config.json > "$tmp"
+    mv "$tmp" ~/.pinchtab/config.json
+  # The CLI works on its own — `pinchtab nav` starts a background server the
+  # first time it is needed — so MCP is opt-in for agents that prefer tools
+  # over shell commands.
+  - |
+    [ "${param_mcp}" = "true" ] || exit 0
+    if command -v claude >/dev/null 2>&1; then
+      claude mcp add pinchtab -s user -- pinchtab mcp
+    else
+      echo "pinchtab: mcp=true but Claude Code is not installed — skipping MCP registration" >&2
+    fi
+
+verify: pinchtab --version
