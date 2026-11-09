@@ -11,15 +11,15 @@ files:
       # OpenJDK development box
 
       This is a disposable OpenJDK dev environment (incus-spawn `tpl-openjdk`,
-      Fedora 44). The JDK **mainline** source is checked out at `~/jdk`
+      Fedora 45). The JDK **mainline** source is checked out at `~/jdk`
       (currently JDK 28). Everything below is already installed and verified.
 
       ## Boot JDK — important
 
-      The build needs a boot JDK of 26/27/28. This box ships **JDK 26** as
+      The build needs a boot JDK of 27/28. This box ships **JDK 27** as
       `java-latest-openjdk` and points `JAVA_HOME` at it:
 
-          JAVA_HOME=/usr/lib/jvm/java-latest-openjdk   # JDK 26
+          JAVA_HOME=/usr/lib/jvm/java-latest-openjdk   # JDK 27
 
       Do **not** boot-build with an older JDK. (There is no JDK 25 here — this
       template deliberately skips it so `configure` doesn't warn about the wrong

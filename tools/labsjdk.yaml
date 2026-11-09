@@ -19,7 +19,9 @@ run:
 run_as_user:
   # -y answers the "Install ... to ..." prompt; the build has no stdin.
   # --alias gives a version-independent path for JAVA_HOME below.
-  - mx -y fetch-jdk --jdk-id ${param_jdk_id} --to /opt/jdks --alias ${param_jdk_id}
+  # env -u: isx puts this tool's own JAVA_HOME in the login environment before
+  # setup runs, and mx refuses a JAVA_HOME that is not a JDK yet.
+  - env -u JAVA_HOME mx -y fetch-jdk --jdk-id ${param_jdk_id} --to /opt/jdks --alias ${param_jdk_id}
   # The archive is only needed for the extraction above — don't bake it into the image.
   - rm -rf ~/.mx/cache
 

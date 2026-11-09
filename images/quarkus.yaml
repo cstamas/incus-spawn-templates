@@ -15,6 +15,6 @@ repos:
     # artifact is confirmed with Maven Central, which depth-first resolution pays one
     # round trip at a time. Measured 16s instead of 44s resolving a Quarkus app on mvnd.
     # mvnd reads resolver settings only from its command line, not MAVEN_OPTS.
-    prime: mvnd -b singlethreaded -Dquickly -Daether.dependencyCollector.impl=bf
+    prime: mvnd -T 0.8C -Dmvnd.minHeapSize=4g -Dmvnd.maxHeapSize=10g -Daether.dependencyCollector.impl=bf -B --color never -l ~/quarkus-prime-build.log -e -fae -DskipDocs -DskipTests -DskipITs -Dinvoker.skip -DskipExtensionValidation -Dskip.gradle.tests -Dtruststore.skip install
   - url: https://github.com/quarkusio/quarkus-quickstarts.git
     path: ~/quarkus-quickstarts

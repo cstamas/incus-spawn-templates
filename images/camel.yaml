@@ -1,0 +1,4 @@
+name: tpl-camel
+parent: tpl-java
+repos:
+  - url: https://github.com/apache/camel.git

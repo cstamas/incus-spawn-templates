@@ -64,7 +64,7 @@ OpenSSL 3.5+ strict verification.
 | Tool | Description |
 |------|-------------|
 | `podman` | Podman with Docker socket compatibility, configured for Testcontainers |
-| `gradle` | Gradle 9.4.1 (installed to `/opt`, symlinked to PATH) |
+| `gradle` | Gradle 9.9.0 (installed to `/opt`, symlinked to PATH) |
 | `graalvm` | Oracle GraalVM for JDK 25 (installed to `/opt`, `native-image` on PATH) |
 | `mx` | GraalVM's `mx` build tool (cloned to `/opt/mx`, `mx` on PATH) |
 | `labsjdk` | JVMCI-enabled labsjdk fetched by `mx` into `/opt/jdks` and set as `JAVA_HOME` (param: `jdk_id`) |

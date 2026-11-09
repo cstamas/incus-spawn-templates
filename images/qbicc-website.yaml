@@ -1,0 +1,6 @@
+name: tpl-qbicc-website
+parent: tpl-java
+tools:
+  - claude
+repos:
+  - url: https://github.com/qbicc/qbicc.github.io

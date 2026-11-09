@@ -1,0 +1,4 @@
+name: tpl-vertx
+parent: tpl-mydev
+repos:
+  - url: https://github.com/eclipse-vertx/vert.x.git

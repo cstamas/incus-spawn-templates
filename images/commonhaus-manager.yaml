@@ -1,0 +1,15 @@
+name: commonhaus-automation
+parent: tpl-java
+tools:
+  - gh
+  - maven-3
+  - pi
+  - herdr
+packages:
+accounts:
+  claude: personal-api
+default-action: pi
+repos:
+  - url: https://github.com/commonhaus/automation.git
+agent_note: |
+   We're in charge of several Commonhaus Foundation projects: if we identify any problem or inconsistency filing an issue will likely be the correct approach, however let's try to also propose solutions already.

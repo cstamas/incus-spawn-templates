@@ -9,8 +9,8 @@ description: Skara CLI (git jcheck / webrev / pr / info / defpath) — OpenJDK c
 # instead of the x64-only `images` task (that one cross-downloads a linux-x64
 # JDK and fails on aarch64).
 #
-# gradlew needs a JDK 21+ to *run* the build; java-latest-openjdk-devel (JDK 26
-# on Fedora 44) is fine. git is needed for the clone and by the CLI itself.
+# gradlew needs a JDK 21+ to *run* the build; java-latest-openjdk-devel (JDK 27
+# on Fedora 45) is fine. git is needed for the clone and by the CLI itself.
 packages:
   - git
   - java-latest-openjdk-devel

@@ -1,13 +1,14 @@
-name: tpl-isx
-description: isx - Recursive Development Environment for isx
-parent: tpl-mydev
-type: kvm
+name: tpl-isx-base
+parent: tpl-java
 tools:
+  - gh
+  - maven-3
   - graalvm
-  - claude: {model: claude-opus-5-5}
-  - zmx
-default-action: claude
+workdir: ~/incus-spawn
 packages:
+  - java-25-openjdk-devel
+  - java-25-openjdk-javadoc
+  - java-25-openjdk-src
   # Appliance kernel build (appliance/kernel/build-kernel.sh)
   - gcc
   - make
@@ -41,8 +42,9 @@ repos:
   - url: https://github.com/Sanne/incus-spawn-images/
   - url: https://github.com/Sanne/homebrew-tap.git
   - url: https://github.com/Sanne/isx-apt-releases.git
+    depth: 1
   - url: https://github.com/tamboui/tamboui
   - url: https://github.com/quarkusio/quarkus.git
   - url: https://github.com/Sanne/isx-presentations/
 agent_note: |
-   This very same environment is running within an instance of isx
+   This very environment is running within an instance of isx
